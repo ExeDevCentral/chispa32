@@ -97,7 +97,7 @@ export function PricingSection() {
                   )}
                 </div>
 
-                <p className="text-xs text-[#595245] mt-3 min-h-[36px] leading-relaxed">
+                <p className="text-xs text-[#595245] mt-3 min-h-9 leading-relaxed">
                   {tier.description}
                 </p>
 

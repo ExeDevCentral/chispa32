@@ -55,11 +55,11 @@ export function TicketStatusStepper({ currentStatus }: { currentStatus: TicketSt
                       : "bg-[#EAE3D5] text-[#8C8474] border-2 border-[#D0C7B6]"
                   }`}
                 >
-                  {isDone ? <Check className="w-4 h-4 stroke-[3]" /> : <Icon className="w-4 h-4" />}
+                  {isDone ? <Check className="w-4 h-4 stroke-3" /> : <Icon className="w-4 h-4" />}
                 </div>
 
                 <span
-                  className={`text-[10px] sm:text-xs mt-2 font-bold text-center max-w-[70px] sm:max-w-[110px] uppercase tracking-tight ${
+                  className={`text-[10px] sm:text-xs mt-2 font-bold text-center max-w-18 sm:max-w-28 uppercase tracking-tight ${
                     isCurrent
                       ? "text-[#FF5500]"
                       : isDone

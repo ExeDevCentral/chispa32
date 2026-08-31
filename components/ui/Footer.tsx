@@ -31,7 +31,7 @@ export function Footer() {
 
           {/* Columna 2: Servicios */}
           <div>
-            <h4 className="font-bold text-white mb-3 text-xs uppercase tracking-wider text-[#FF5500]">
+            <h4 className="font-bold mb-3 text-xs uppercase tracking-wider text-[#FF5500]">
               Trabajos de Banco
             </h4>
             <ul className="space-y-2 text-[11px]">
@@ -45,7 +45,7 @@ export function Footer() {
 
           {/* Columna 3: Contacto */}
           <div>
-            <h4 className="font-bold text-white mb-3 text-xs uppercase tracking-wider text-[#FF5500]">
+            <h4 className="font-bold mb-3 text-xs uppercase tracking-wider text-[#FF5500]">
               Canales de Guardia
             </h4>
             <ul className="space-y-2.5 text-[11px]">

@@ -118,7 +118,7 @@ function TicketForm() {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-[#FF5500] mb-1.5 font-mono uppercase flex items-center gap-1">
+            <label className="flex items-center gap-1 text-xs font-bold text-[#FF5500] mb-1.5 font-mono uppercase">
               <Phone className="w-3.5 h-3.5" />
               WhatsApp (Obligatorio)
             </label>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Send, Wrench, Terminal, User } from "lucide-react";
+import { Send, Wrench, Terminal } from "lucide-react";
 import { TicketMessage, UserRole } from "@/types";
 import { formatDate } from "@/lib/utils";
 
@@ -24,7 +24,7 @@ export function TicketChat({ messages, currentRole, onSendMessage }: TicketChatP
   };
 
   return (
-    <div className="bg-[#FAF8F3] border-2 border-[#D6CEC0] rounded-xl overflow-hidden flex flex-col h-[480px] font-sans">
+    <div className="bg-[#FAF8F3] border-2 border-[#D6CEC0] rounded-xl overflow-hidden flex flex-col h-120 font-sans">
       
       {/* Header del Chat */}
       <div className="p-3.5 border-b-2 border-[#D6CEC0] bg-[#EAE3D5] flex items-center justify-between font-mono">
