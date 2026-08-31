@@ -21,7 +21,8 @@ export const createClient = (cookieStore?: Awaited<ReturnType<typeof cookies>>) 
             store.set(name, value, options)
           );
         } catch {
-          // Ignorado en Server Components
+          // The `setAll` method was called from a Server Component.
+          // This can be ignored if you have middleware refreshing user sessions.
         }
       },
     },
