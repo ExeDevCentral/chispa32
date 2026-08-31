@@ -1,26 +1,75 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --font-industrial: "Space Grotesk", sans-serif;
+    --font-mono-tech: "JetBrains Mono", monospace;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #F3EFE6;
+  color: #191C21;
+  font-family: var(--font-industrial), sans-serif;
+  overflow-x: hidden;
+}
+
+code, pre, .font-mono {
+  font-family: var(--font-mono-tech), monospace;
+}
+
+/* Scrollbar industrial de taller */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: #E8E2D5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C4BAA7;
+  border-radius: 2px;
+  border: 2px solid #E8E2D5;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FF5500;
+}
+
+/* Cuadrícula de papel milimetrado técnico / Blueprint de banco de trabajo */
+.bg-blueprint-grid {
+  background-size: 24px 24px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+}
+
+.bg-dark-grid {
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+/* Sello técnico de taller */
+.stamp-tag {
+  border: 2px solid #FF5500;
+  color: #FF5500;
+  font-family: var(--font-mono-tech), monospace;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* Cinta de precaución / striped safety tape */
+.hazard-stripes {
+  background: repeating-linear-gradient(
+    45deg,
+    #FF5500,
+    #FF5500 10px,
+    #191C21 10px,
+    #191C21 20px
+  );
 }
