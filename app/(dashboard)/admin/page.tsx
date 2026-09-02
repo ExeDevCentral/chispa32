@@ -60,6 +60,7 @@ export default function AdminDashboardPage() {
   const [editingNotes, setEditingNotes] = useState<Record<string, string>>({});
   const [editingBudgets, setEditingBudgets] = useState<Record<string, number>>({});
   const [photoModal, setPhotoModal] = useState<string | null>(null);
+  const [emailStatus, setEmailStatus] = useState<string | null>(null);
 
   const [pricesList, setPricesList] = useState<WorkshopPrice[]>([]);
   const [editingPrice, setEditingPrice] = useState<WorkshopPrice | null>(null);
@@ -97,6 +98,47 @@ export default function AdminDashboardPage() {
   const handleStatus = async (id: string, status: TicketStatus) => {
     await updateTicketStatus(id, status);
     toast("Estado actualizado", "success");
+
+    // Al entregar la placa, enviamos el reporte detallado al email del cliente
+    if (status === "entregado") {
+      const ticket = tickets.find((t) => t.id === id);
+      if (ticket && ticket.user_email) {
+        setEmailStatus("Enviando reporte de entrega...");
+        try {
+          const res = await fetch("/api/tickets/report", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ticketNumber: ticket.ticket_number,
+              clienteNombre: ticket.user_nombre || "Cliente",
+              para: ticket.user_email,
+              tipoChip: ticket.tipo_chip,
+              titulo: ticket.titulo,
+              descripcion: ticket.descripcion,
+              presupuesto: ticket.presupuesto,
+              notaInterna: ticket.nota_interna,
+              mensajes: (ticket.messages || []).map((m) => ({
+                remitente: m.sender_name || "",
+                rol: m.sender_role || "cliente",
+                texto: m.mensaje,
+                fecha: formatDate(m.created_at),
+              })),
+              fechaEntrega: formatDate(new Date().toISOString()),
+            }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            setEmailStatus("✓ Reporte enviado a " + ticket.user_email);
+          } else {
+            setEmailStatus("Aviso: no se envió el email (" + (data.error || "config de email") + ")");
+          }
+        } catch (e) {
+          console.error("Error enviando reporte:", e);
+          setEmailStatus("No se pudo enviar el reporte por email.");
+        }
+        setTimeout(() => setEmailStatus(null), 6000);
+      }
+    }
   };
   const handleNote = async (id: string) => {
     if (editingNotes[id] !== undefined) {
@@ -288,6 +330,16 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Estado de envío de reportes por email */}
+      {emailStatus && (
+        <div className="container mx-auto px-6 sm:px-8 max-w-7xl pt-4">
+          <div className="p-3 rounded-xl border-2 border-[#FF5500] bg-[#EAE3D5] text-xs text-[#191C21] font-mono font-bold flex items-center gap-2">
+            {emailStatus.startsWith("✓") ? <Check className="w-4 h-4 text-[#2E7D32]" /> : <Send className="w-4 h-4 text-[#FF5500]" />}
+            <span>{emailStatus}</span>
+          </div>
+        </div>
+      )}
 
       {/* ══════════════════════════════════════════════════════ */}
       {/* CONTENT AREA */}
