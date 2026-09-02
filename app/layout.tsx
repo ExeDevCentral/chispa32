@@ -1,10 +1,21 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/ui/Navbar";
 import { Footer } from "@/components/ui/Footer";
 import { WhatsAppFloat } from "@/components/marketing/WhatsAppFloat";
 import { EnergyGridBgLight } from "@/components/ui/EnergyGridBgLight";
+import {
+  BRAND_NAME,
+  SITE_URL,
+  TITLE_TEMPLATE,
+  DEFAULT_TITLE,
+  DEFAULT_DESCRIPTION,
+  DEFAULT_KEYWORDS,
+  DEFAULT_OG_TITLE,
+  DEFAULT_OG_DESCRIPTION,
+  BRAND_COLOR,
+} from "@/lib/seo";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-industrial",
@@ -19,9 +30,71 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Chispa32 — Taller de Reparación y Reflasheo ESP32 | Rosario",
-  description: "Taller técnico de electrónica y microcontroladores ESP32 en Rosario, Argentina. Banco de pruebas, recuperación de bootloaders, flasheo Tasmota/ESPHome y reparación de placas trabadas.",
-  keywords: ["Taller ESP32 Rosario", "Reparación microcontroladores", "Flasheo ESPHome Tasmota", "Desbrickeado ESP32", "Servicio Técnico Electrónica Rosario"],
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: DEFAULT_TITLE,
+    template: TITLE_TEMPLATE,
+  },
+  description: DEFAULT_DESCRIPTION,
+  keywords: DEFAULT_KEYWORDS,
+  applicationName: BRAND_NAME,
+  authors: [{ name: BRAND_NAME }],
+  creator: BRAND_NAME,
+  publisher: BRAND_NAME,
+  category: "technology",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "es_AR",
+    url: SITE_URL,
+    siteName: BRAND_NAME,
+    title: DEFAULT_OG_TITLE,
+    description: DEFAULT_OG_DESCRIPTION,
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: DEFAULT_OG_TITLE,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: DEFAULT_OG_TITLE,
+    description: DEFAULT_OG_DESCRIPTION,
+    images: ["/twitter-image"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  icons: {
+    icon: "/icon.svg",
+    apple: "/apple-icon.png",
+  },
+  manifest: "/manifest.webmanifest",
+  formatDetection: {
+    email: true,
+    address: true,
+    telephone: true,
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: BRAND_COLOR,
+  colorScheme: "light",
 };
 
 export default function RootLayout({
