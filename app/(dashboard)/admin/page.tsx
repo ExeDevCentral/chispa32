@@ -3,22 +3,21 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
-  Wrench, Cpu, Send, MessageCircle, Search, Lock, ArrowRight, Save,
+  Cpu, Send, MessageCircle, Search, Lock, ArrowRight, Save,
   Tag, MessageSquare, ExternalLink, Star, Plus, Trash2, Edit2, Check,
   X, Image as ImageIcon, DollarSign, Shield, Copy, Sparkles, Eye,
-  EyeOff, ChevronRight, Globe, Activity, Zap, ClipboardList, BarChart3
+  EyeOff, Globe, Activity, ClipboardList, BarChart3
 } from "lucide-react";
 import { useTicketStore } from "@/lib/ticket-store";
-import { useCurrentUser, SUPER_ADMIN_EMAIL } from "@/lib/auth";
+import { useCurrentUser } from "@/lib/auth";
 import {
-  getReviews, saveReview, deleteReviewInDB, toggleReviewApproval,
+  getReviews, deleteReviewInDB, toggleReviewApproval,
   getWorkshopPrices, saveWorkshopPrice,
   getQuickResponses, saveQuickResponse, deleteQuickResponseInDB,
   getQuickLinks, saveQuickLink, deleteQuickLinkInDB,
 } from "@/lib/supabase-service";
 import { TicketStatus, Review, WorkshopPrice, QuickResponse, QuickLink } from "@/types";
 import { formatDate, formatCurrencyARS } from "@/lib/utils";
-import { whatsappUrl } from "@/lib/site-config";
 import { ToastContainer } from "@/components/ui/Toast";
 import { useToast } from "@/hooks/useToast";
 
@@ -50,8 +49,8 @@ const TABS = [
 type Tab = typeof TABS[number]["id"];
 
 export default function AdminDashboardPage() {
-  const { tickets, updateTicketStatus, updateInternalNote, updateBudget, isLoaded } = useTicketStore();
-  const { email, nombre, avatarUrl, isAdmin } = useCurrentUser();
+  const { tickets, updateTicketStatus, updateInternalNote, updateBudget } = useTicketStore();
+  const { email, nombre, avatarUrl, isAdmin, isLoading: isAuthLoading } = useCurrentUser();
   const { toasts, toast, remove } = useToast();
 
   const [activeTab, setActiveTab] = useState<Tab>("tickets");
@@ -215,6 +214,46 @@ export default function AdminDashboardPage() {
     setReviewsList(prev => prev.filter(r => r.id !== id));
     toast("Reseña eliminada", "info");
   };
+
+  // ── GATE DE ACCESO: solo el super admin puede ver el dashboard ──
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center bg-[#F3EFE6] font-mono">
+        <div className="flex items-center gap-3 text-[#595245]">
+          <div className="w-5 h-5 rounded-full border-2 border-[#FF5500] border-t-transparent animate-spin" />
+          <span>Verificando acceso al banco...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center bg-[#F3EFE6] p-6 font-sans">
+        <div className="max-w-md w-full text-center bg-[#FAF8F3] border-4 border-[#191C21] rounded-2xl p-10 shadow-xl">
+          <div className="w-16 h-16 mx-auto mb-5 rounded-xl bg-[#FFEBEE] border-2 border-[#C62828] flex items-center justify-center">
+            <Lock className="w-8 h-8 text-[#C62828]" />
+          </div>
+          <h1 className="text-2xl font-black uppercase text-[#191C21] tracking-tight mb-2">
+            Acceso restringido
+          </h1>
+          <p className="text-sm text-[#595245] leading-relaxed mb-6">
+            Este panel es solo para el administrador del taller Chispa32. Si ingresaste con
+            otra cuenta de Google, no tenés permisos para ver el banco de administración.
+          </p>
+          <div className="bg-[#F3EFE6] border border-[#D0C7B6] rounded-xl px-4 py-3 mb-6 text-xs font-mono text-[#736B5E]">
+            {email ? `Sesión: ${email}` : "No hay una sesión activa"}
+          </div>
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#FF5500] hover:bg-[#E64D00] text-white font-mono font-bold rounded-xl uppercase tracking-wider text-xs transition-all"
+          >
+            <ArrowRight className="w-4 h-4" /> Volver al sitio
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen text-[#191C21] font-sans">
