@@ -5,7 +5,8 @@ import { useState } from "react";
 import { useTicketStore } from "@/lib/ticket-store";
 import { Clock, CheckCircle2, Cpu, PlusCircle, Search, Wrench } from "lucide-react";
 import { formatDate } from "@/lib/utils";
-import { RoleSwitcher } from "@/components/dashboard/RoleSwitcher";
+import { MiniStepper } from "@/components/tickets/MiniStepper";
+import { MetricCardSkeleton, TicketCardSkeleton } from "@/components/ui/SkeletonCard";
 
 export default function ClientDashboardPage() {
   const { tickets, isLoaded } = useTicketStore();
@@ -14,10 +15,28 @@ export default function ClientDashboardPage() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-[70vh] flex items-center justify-center text-[#595245] font-mono">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full border-2 border-[#FF5500] border-t-transparent animate-spin" />
-          <span>Cargando órdenes de taller...</span>
+      <div className="container mx-auto px-4 py-8 max-w-6xl font-sans">
+        {/* Header placeholder */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div className="space-y-2">
+            <div className="h-8 w-56 bg-[#EAE3D5] rounded animate-pulse" />
+            <div className="h-4 w-72 bg-[#EAE3D5] rounded animate-pulse" />
+          </div>
+          <div className="h-10 w-40 bg-[#EAE3D5] rounded-lg animate-pulse" />
+        </div>
+        {/* Metric cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <MetricCardSkeleton />
+          <MetricCardSkeleton />
+          <MetricCardSkeleton />
+        </div>
+        {/* Filter bar placeholder */}
+        <div className="h-12 bg-[#EAE3D5] rounded-xl animate-pulse mb-6" />
+        {/* Ticket cards */}
+        <div className="space-y-3">
+          <TicketCardSkeleton />
+          <TicketCardSkeleton />
+          <TicketCardSkeleton />
         </div>
       </div>
     );
@@ -25,7 +44,7 @@ export default function ClientDashboardPage() {
 
   // Filtrar tickets
   const filteredTickets = tickets.filter((t) => {
-    const matchesSearch = 
+    const matchesSearch =
       t.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
       t.tipo_chip.toLowerCase().includes(searchTerm.toLowerCase()) ||
       t.ticket_number.toString().includes(searchTerm);
@@ -41,18 +60,15 @@ export default function ClientDashboardPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl font-sans">
-      
+
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-black text-[#191C21] uppercase tracking-tight">
-              Mis Placas en Taller
-            </h1>
-            <RoleSwitcher />
-          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-[#191C21] uppercase tracking-tight">
+            Mis Placas en Taller
+          </h1>
           <p className="text-[#595245] text-xs sm:text-sm mt-1 font-medium">
-            Seguimiento de reparaciones, reflasheos y órdenes de servicio técnico.
+            Seguimiento en tiempo real de reparaciones, reflasheos y órdenes de servicio técnico en Rosario.
           </p>
         </div>
 
@@ -143,59 +159,45 @@ export default function ClientDashboardPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filteredTickets.map((t) => {
-            const isResolved = t.estado === "resuelto" || t.estado === "entregado";
-            const isWaiting = t.estado === "esperando_cliente";
+          {filteredTickets.map((t) => (
+            <Link
+              key={t.id}
+              href={`/panel/tickets/${t.id}`}
+              className="block bg-[#FAF8F3] border-2 border-[#D6CEC0] hover:border-[#FF5500] rounded-xl p-5 transition-all duration-200 group shadow-sm"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 
-            return (
-              <Link
-                key={t.id}
-                href={`/panel/tickets/${t.id}`}
-                className="block bg-[#FAF8F3] border-2 border-[#D6CEC0] hover:border-[#FF5500] rounded-xl p-5 transition-all duration-200 group shadow-sm"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 font-mono">
-                      <span className="font-bold text-[#FF5500] text-xs bg-[#F3EFE6] px-2 py-0.5 rounded border border-[#D6CEC0]">
-                        ORDEN #{t.ticket_number}
-                      </span>
-                      <span className="text-xs font-bold text-[#191C21] flex items-center gap-1">
-                        <Cpu className="w-3.5 h-3.5 text-[#FF5500]" /> {t.tipo_chip}
-                      </span>
-                      <span className="text-[#A69E8F] text-xs">•</span>
-                      <span className="text-[11px] text-[#736B5E]">
-                        {formatDate(t.created_at)}
-                      </span>
-                    </div>
-
-                    <h3 className="text-sm sm:text-base font-bold text-[#191C21] group-hover:text-[#FF5500] transition-colors">
-                      {t.titulo}
-                    </h3>
-
-                    <p className="text-xs text-[#595245] line-clamp-1">
-                      {t.descripcion}
-                    </p>
-                  </div>
-
-                  <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0 border-t sm:border-t-0 border-[#EAE3D5] pt-2 sm:pt-0 font-mono">
-                    <span
-                      className={`text-[11px] font-bold uppercase px-3 py-1 rounded ${
-                        isResolved
-                          ? "bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]"
-                          : isWaiting
-                          ? "bg-[#FFF3E0] text-[#E65100] border border-[#FFE0B2] animate-pulse"
-                          : "bg-[#EAE3D5] text-[#191C21] border border-[#D0C7B6]"
-                      }`}
-                    >
-                      {t.estado.replace("_", " ")}
+                <div className="space-y-1 flex-1 min-w-0">
+                  <div className="flex items-center gap-2 font-mono flex-wrap">
+                    <span className="font-bold text-[#FF5500] text-xs bg-[#F3EFE6] px-2 py-0.5 rounded border border-[#D6CEC0]">
+                      ORDEN #{t.ticket_number}
+                    </span>
+                    <span className="text-xs font-bold text-[#191C21] flex items-center gap-1">
+                      <Cpu className="w-3.5 h-3.5 text-[#FF5500]" /> {t.tipo_chip}
+                    </span>
+                    <span className="text-[#A69E8F] text-xs">•</span>
+                    <span className="text-[11px] text-[#736B5E]">
+                      {formatDate(t.created_at)}
                     </span>
                   </div>
 
+                  <h3 className="text-sm sm:text-base font-bold text-[#191C21] group-hover:text-[#FF5500] transition-colors truncate">
+                    {t.titulo}
+                  </h3>
+
+                  <p className="text-xs text-[#595245] line-clamp-1">
+                    {t.descripcion}
+                  </p>
                 </div>
-              </Link>
-            );
-          })}
+
+                {/* MiniStepper */}
+                <div className="shrink-0 border-t sm:border-t-0 border-[#EAE3D5] pt-2 sm:pt-0 sm:pl-4">
+                  <MiniStepper status={t.estado} />
+                </div>
+
+              </div>
+            </Link>
+          ))}
         </div>
       )}
 

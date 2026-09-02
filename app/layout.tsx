@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/ui/Navbar";
 import { Footer } from "@/components/ui/Footer";
 import { WhatsAppFloat } from "@/components/marketing/WhatsAppFloat";
+import { EnergyGridBgLight } from "@/components/ui/EnergyGridBgLight";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-industrial",
@@ -30,17 +31,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}>
-      <body className="min-h-screen flex flex-col bg-[#F3EFE6] text-[#191C21] selection:bg-[#FF5500] selection:text-white font-sans">
+      <body className="min-h-screen flex flex-col bg-workshop-surface text-[#191C21] selection:bg-[#FF5500] selection:text-white font-sans">
+        <EnergyGridBgLight />
+
+        {/* All content sits above the canvas */}
+        <div className="relative z-10 flex flex-col min-h-screen">
+
         {/* Banner industrial superior de taller */}
-        <div className="bg-[#191C21] text-[#E5E0D3] text-[11px] font-mono py-1 px-4 border-b border-[#2C3038] flex items-center justify-between overflow-x-auto">
+        <div className="bg-[#191C21]/95 backdrop-blur-sm text-[#FAF8F3] text-[11px] font-mono py-1 px-4 border-b border-[#FF5500]/30 flex items-center justify-between overflow-x-auto">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#FF5500] animate-pulse" />
-            <span className="font-bold tracking-wider">BANCO DE PRUEBAS ACTIVO</span>
-            <span className="text-[#8C929E] hidden sm:inline">• Taller Especializado ESP32 / ESP8266 / IoT</span>
+            <span className="font-bold tracking-wide">Banco de pruebas activo</span>
+            <span className="text-[#8C929E] hidden sm:inline">• Taller ESP32 / ESP8266 / IoT</span>
           </div>
           <div className="flex items-center gap-3 text-[10px] text-[#A6ACB8]">
             <span className="hidden md:inline">📍 Rosario, Santa Fe</span>
-            <span className="bg-[#2D323B] text-[#FF9E79] px-2 py-0.5 rounded font-mono font-bold">RMA / TALLER 2026</span>
+            <span className="bg-[#FF5500] text-white px-2 py-0.5 rounded font-mono font-bold">RMA / Taller 2026</span>
           </div>
         </div>
 
@@ -49,6 +55,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        </div>{/* end relative z-10 wrapper */}
         <WhatsAppFloat />
       </body>
     </html>

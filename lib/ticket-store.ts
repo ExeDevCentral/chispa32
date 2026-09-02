@@ -1,72 +1,57 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Ticket, TicketStatus, TicketMessage, UserRole } from "@/types";
-import { INITIAL_TICKETS } from "./mock-data";
-
-const STORAGE_KEY = "chispa32_tickets_etapa1";
-const ROLE_KEY = "chispa32_user_role";
+import { useState, useEffect, useCallback } from "react";
+import { Ticket, TicketStatus, UserRole } from "@/types";
+import {
+  getTickets,
+  createTicketInDB,
+  updateTicketStatusInDB,
+  updateTicketNoteInDB,
+  updateTicketBudgetInDB,
+  addTicketMessageInDB,
+} from "./supabase-service";
 
 export function useTicketStore() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [currentRole, setCurrentRole] = useState<UserRole>("cliente");
   const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
+  const refreshTickets = useCallback(async () => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        setTickets(JSON.parse(saved));
-      } else {
-        setTickets(INITIAL_TICKETS);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_TICKETS));
-      }
-
-      const savedRole = localStorage.getItem(ROLE_KEY) as UserRole;
-      if (savedRole) {
-        setCurrentRole(savedRole);
-      }
-    } catch {
-      setTickets(INITIAL_TICKETS);
+      const data = await getTickets();
+      setTickets(data);
+    } catch (e) {
+      console.error("Error refreshing tickets:", e);
     } finally {
       setIsLoaded(true);
     }
   }, []);
 
-  const saveTickets = (updated: Ticket[]) => {
-    setTickets(updated);
+  useEffect(() => {
+    refreshTickets();
+
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    } catch (e) {
-      console.error("Error guardando tickets:", e);
-    }
-  };
+      const savedRole = localStorage.getItem("chispa32_user_role") as UserRole;
+      if (savedRole) {
+        setCurrentRole(savedRole);
+      }
+    } catch {}
+  }, [refreshTickets]);
 
   const switchRole = (role: UserRole) => {
     setCurrentRole(role);
     try {
-      localStorage.setItem(ROLE_KEY, role);
+      localStorage.setItem("chispa32_user_role", role);
     } catch (e) {
       console.error("Error guardando rol:", e);
     }
   };
 
   const createTicket = async (ticketData: Omit<Ticket, "id" | "ticket_number" | "created_at" | "updated_at">) => {
-    const nextNumber = tickets.length > 0 ? Math.max(...tickets.map((t) => t.ticket_number)) + 1 : 101;
-    const now = new Date().toISOString();
-    const newTicket: Ticket = {
-      ...ticketData,
-      id: `tk-${Date.now()}`,
-      ticket_number: nextNumber,
-      created_at: now,
-      updated_at: now,
-      messages: ticketData.messages || [],
-    };
+    const newTicket = await createTicketInDB(ticketData);
+    setTickets((prev) => [newTicket, ...prev]);
 
-    const updated = [newTicket, ...tickets];
-    saveTickets(updated);
-
-    // Trigger de alerta a Telegram
+    // Send Telegram Notification
     try {
       fetch("/api/tickets/notify", {
         method: "POST",
@@ -81,71 +66,43 @@ export function useTicketStore() {
           ticketId: newTicket.id,
         }),
       }).catch((e) => console.log("Telegram alert error:", e));
-    } catch {
-      // Continuar sin bloquear
-    }
+    } catch {}
 
     return newTicket;
   };
 
-  const updateTicketStatus = (ticketId: string, newStatus: TicketStatus) => {
-    const updated = tickets.map((t) => {
-      if (t.id === ticketId) {
-        return {
-          ...t,
-          estado: newStatus,
-          updated_at: new Date().toISOString(),
-        };
-      }
-      return t;
-    });
-    saveTickets(updated);
+  const updateTicketStatus = async (ticketId: string, newStatus: TicketStatus) => {
+    await updateTicketStatusInDB(ticketId, newStatus);
+    setTickets((prev) =>
+      prev.map((t) => (t.id === ticketId ? { ...t, estado: newStatus, updated_at: new Date().toISOString() } : t))
+    );
   };
 
-  const updateInternalNote = (ticketId: string, note: string) => {
-    const updated = tickets.map((t) => {
-      if (t.id === ticketId) {
-        return {
-          ...t,
-          nota_interna: note,
-          updated_at: new Date().toISOString(),
-        };
-      }
-      return t;
-    });
-    saveTickets(updated);
+  const updateInternalNote = async (ticketId: string, note: string) => {
+    await updateTicketNoteInDB(ticketId, note);
+    setTickets((prev) =>
+      prev.map((t) => (t.id === ticketId ? { ...t, nota_interna: note, updated_at: new Date().toISOString() } : t))
+    );
   };
 
-  const addMessage = (
+  const updateBudget = async (ticketId: string, budget: number) => {
+    await updateTicketBudgetInDB(ticketId, budget);
+    setTickets((prev) =>
+      prev.map((t) => (t.id === ticketId ? { ...t, presupuesto: budget, updated_at: new Date().toISOString() } : t))
+    );
+  };
+
+  const addMessage = async (
     ticketId: string,
     messageText: string,
     senderId: string,
     senderName: string,
     senderRole: UserRole
   ) => {
-    const now = new Date().toISOString();
-    const newMessage: TicketMessage = {
-      id: `msg-${Date.now()}`,
-      ticket_id: ticketId,
-      sender_id: senderId,
-      sender_name: senderName,
-      sender_role: senderRole,
-      mensaje: messageText,
-      created_at: now,
-    };
-
-    const updated = tickets.map((t) => {
-      if (t.id === ticketId) {
-        return {
-          ...t,
-          updated_at: now,
-          messages: [...(t.messages || []), newMessage],
-        };
-      }
-      return t;
-    });
-
-    saveTickets(updated);
+    const newMsg = await addTicketMessageInDB(ticketId, messageText, senderId, senderName, senderRole);
+    setTickets((prev) =>
+      prev.map((t) => (t.id === ticketId ? { ...t, messages: [...(t.messages || []), newMsg] } : t))
+    );
 
     // Alerta a Telegram si el mensaje lo envía el cliente
     if (senderRole === "cliente") {
@@ -162,12 +119,10 @@ export function useTicketStore() {
             type: "message",
           }),
         }).catch((e) => console.log("Telegram alert error:", e));
-      } catch {
-        // Continuar
-      }
+      } catch {}
     }
 
-    return newMessage;
+    return newMsg;
   };
 
   return {
@@ -175,9 +130,11 @@ export function useTicketStore() {
     currentRole,
     isLoaded,
     switchRole,
+    refreshTickets,
     createTicket,
     updateTicketStatus,
     updateInternalNote,
+    updateBudget,
     addMessage,
   };
 }

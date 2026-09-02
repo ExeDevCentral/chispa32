@@ -78,16 +78,16 @@ const WORKSHOP_SERVICES = [
 
 export function ServicesGrid() {
   return (
-    <section id="servicios" className="py-16 sm:py-20 bg-[#FAF8F3] border-b-2 border-[#D6CEC0]">
+    <section id="servicios" className="py-16 sm:py-20">
       <div className="container mx-auto px-4 max-w-6xl">
         
         {/* Header de Sección */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#EAE3D5] text-[#191C21] rounded font-mono text-xs font-bold uppercase tracking-wider border border-[#D0C7B6]">
-            <span>CATÁLOGO DE SERVICIO TÉCNICO</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#EAE3D5] text-[#191C21] rounded font-mono text-xs font-bold tracking-wide border border-[#D0C7B6]">
+            <span>Catálogo de servicio técnico</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-[#191C21] uppercase mt-3 tracking-tight">
-            Trabajos de Banco y Especialidades
+          <h2 className="text-3xl sm:text-4xl font-black text-[#191C21] mt-3 tracking-tight">
+            Trabajos de banco y especialidades
           </h2>
           <p className="text-[#595245] mt-2 text-sm sm:text-base font-medium">
             Instrumental de medición, herramientas de flasheo a bajo nivel y conocimiento práctico en microcontroladores.

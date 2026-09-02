@@ -38,16 +38,16 @@ export function FAQSection() {
   };
 
   return (
-    <section id="faq" className="py-16 sm:py-20 bg-[#F3EFE6]">
+    <section id="faq" className="py-16 sm:py-20">
       <div className="container mx-auto px-4 max-w-4xl">
         
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#EAE3D5] text-[#191C21] rounded font-mono text-xs font-bold uppercase tracking-wider border border-[#D0C7B6]">
-            <span>CONSULTAS OPERATIVAS</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#EAE3D5] text-[#191C21] rounded font-mono text-xs font-bold tracking-wide border border-[#D0C7B6]">
+            <span>Consultas operativas</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-[#191C21] uppercase mt-3 tracking-tight">
-            Preguntas Frecuentes de Taller
+          <h2 className="text-3xl sm:text-4xl font-black text-[#191C21] mt-3 tracking-tight">
+            Preguntas frecuentes de taller
           </h2>
           <p className="text-[#595245] mt-2 text-sm sm:text-base font-medium">
             Detalles sobre logística, garantías de banco y métodos de trabajo.

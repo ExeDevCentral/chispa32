@@ -30,16 +30,16 @@ const WORKSHOP_STEPS = [
 
 export function HowItWorks() {
   return (
-    <section id="como-funciona" className="py-16 sm:py-20 bg-[#FAF8F3] border-b-2 border-[#D6CEC0]">
+    <section id="como-funciona" className="py-16 sm:py-20">
       <div className="container mx-auto px-4 max-w-6xl">
         
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#EAE3D5] text-[#191C21] rounded font-mono text-xs font-bold uppercase tracking-wider border border-[#D0C7B6]">
-            <span>PROTOCOLO OPERATIVO</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#EAE3D5] text-[#191C21] rounded font-mono text-xs font-bold tracking-wide border border-[#D0C7B6]">
+            <span>Protocolo operativo</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-[#191C21] uppercase mt-3 tracking-tight">
-            ¿Cómo Ingresar tu Placa a Taller?
+          <h2 className="text-3xl sm:text-4xl font-black text-[#191C21] mt-3 tracking-tight">
+            ¿Cómo ingresar tu placa a taller?
           </h2>
           <p className="text-[#595245] mt-2 text-sm sm:text-base font-medium">
             Flujo de trabajo estructurado y con seguimiento continuo desde tu panel.

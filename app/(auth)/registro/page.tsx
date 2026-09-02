@@ -31,13 +31,13 @@ export default function RegistroPage() {
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 font-sans">
-      <div className="w-full max-w-lg bg-[#FAF8F3] border-2 border-[#D6CEC0] p-8 rounded-xl shadow-md relative">
+      <div className="w-full max-w-lg bg-[#FAF8F3]/90 backdrop-blur-md border-2 border-[#D6CEC0] p-8 rounded-xl shadow-md relative">
         
         <div className="text-center mb-8">
           <div className="w-12 h-12 rounded-lg bg-[#FF5500] flex items-center justify-center text-white mx-auto mb-3 shadow-sm">
             <Wrench className="w-6 h-6 -rotate-45" />
           </div>
-          <h1 className="text-2xl font-black text-[#191C21] uppercase tracking-tight">Alta de Cliente</h1>
+          <h1 className="text-2xl font-black text-[#191C21] tracking-tight">Alta de cliente</h1>
           <p className="text-xs text-[#595245] mt-1 font-medium font-mono">
             Registrá tus datos para coordinar reparaciones y entregas en Rosario
           </p>

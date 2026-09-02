@@ -1,68 +1,33 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check, Wrench, ShieldCheck, Clock } from "lucide-react";
 import { formatCurrencyARS } from "@/lib/utils";
-
-const WORKSHOP_TIERS = [
-  {
-    name: "Diagnóstico & Flasheo Simple",
-    badge: "TRABAJO BÁSICO",
-    price: 8500,
-    time: "24 a 48 hs de banco",
-    description: "Para placas que no bootean, quedaron trabadas en un ciclo de reset o requieren erase completo de memoria flash.",
-    features: [
-      "Lectura de registros y sonda por UART",
-      "Erase físico de memoria SPI Flash",
-      "Restauración de bootloader original",
-      "Test de consumo y riel de 3.3V",
-      "Informe técnico de salida",
-    ],
-    highlight: false,
-  },
-  {
-    name: "Flasheo & Nodo Domótico",
-    badge: "MÁS SOLICITADO",
-    price: 12000,
-    time: "24 a 48 hs de banco",
-    description: "Para módulos Sonoff, Shelly o placas que querés dejar integradas localmente en Home Assistant o WLED.",
-    features: [
-      "Todo lo incluido en Flasheo Simple",
-      "Carga de ESPHome, Tasmota o WLED",
-      "Generación de archivo .yaml a medida",
-      "Configuración de sensores y relés",
-      "Calibración de broker MQTT local",
-      "Guía de conexión para tu red",
-    ],
-    highlight: true,
-  },
-  {
-    name: "Debugging de Código & FreeRTOS",
-    badge: "PROYECTO COMPLEJO",
-    price: 18000,
-    time: "48 a 72 hs",
-    description: "Para estudiantes o desarrolladores con código que se cuelga, caídas de memoria Heap o migración a PlatformIO.",
-    features: [
-      "Auditoría técnica de código fuente",
-      "Detección y corrección de Memory Leaks",
-      "Migración de Arduino a PlatformIO / ESP-IDF",
-      "Separación de tareas en FreeRTOS",
-      "Rutina de Auto-Reconnect WiFi probada",
-      "Garantía de funcionamiento de código",
-    ],
-    highlight: false,
-  },
-];
+import { WorkshopPrice } from "@/types";
+import { getWorkshopPrices, INITIAL_PRICES } from "@/lib/supabase-service";
 
 export function PricingSection() {
+  const [prices, setPrices] = useState<WorkshopPrice[]>(INITIAL_PRICES);
+
+  useEffect(() => {
+    getWorkshopPrices().then((data) => {
+      if (data && data.length > 0) {
+        setPrices(data.filter((p) => p.active !== false));
+      }
+    });
+  }, []);
+
   return (
-    <section id="precios" className="py-16 sm:py-20 bg-[#F3EFE6] border-b-2 border-[#D6CEC0]">
+    <section id="precios" className="py-16 sm:py-20">
       <div className="container mx-auto px-4 max-w-6xl">
         
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#EAE3D5] text-[#191C21] rounded font-mono text-xs font-bold uppercase tracking-wider border border-[#D0C7B6]">
-            <span>TARIFARIO OFICIAL DE TALLER</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#EAE3D5] text-[#191C21] rounded font-mono text-xs font-bold tracking-wide border border-[#D0C7B6]">
+            <span>Tarifario oficial de taller</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-[#191C21] uppercase mt-3 tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-black text-[#191C21] mt-3 tracking-tight">
             Valores Transparentes en Pesos Argentinos
           </h2>
           <p className="text-[#595245] mt-2 text-sm sm:text-base font-medium">
@@ -72,9 +37,9 @@ export function PricingSection() {
 
         {/* Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch font-sans">
-          {WORKSHOP_TIERS.map((tier, idx) => (
+          {prices.map((tier) => (
             <div
-              key={idx}
+              key={tier.id}
               className={`rounded-xl p-8 flex flex-col justify-between transition-all duration-200 ${
                 tier.highlight
                   ? "bg-[#FAF8F3] border-4 border-[#FF5500] shadow-xl relative scale-100 lg:-translate-y-2"
@@ -83,14 +48,14 @@ export function PricingSection() {
             >
               {tier.highlight && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#FF5500] text-white text-[11px] font-black uppercase px-4 py-1 rounded shadow-sm font-mono tracking-wider">
-                  ★ {tier.badge}
+                  ★ {tier.badge || "MÁS SOLICITADO"}
                 </div>
               )}
 
               <div>
                 <div className="flex items-center justify-between border-b border-[#D6CEC0] pb-4">
                   <h3 className="font-extrabold text-lg text-[#191C21]">{tier.name}</h3>
-                  {!tier.highlight && (
+                  {!tier.highlight && tier.badge && (
                     <span className="text-[10px] font-mono font-bold text-[#6B6355] bg-[#EAE3D5] px-2 py-0.5 rounded uppercase">
                       {tier.badge}
                     </span>
@@ -114,7 +79,7 @@ export function PricingSection() {
                 </div>
 
                 <ul className="mt-6 space-y-3 font-mono text-xs text-[#332E27]">
-                  {tier.features.map((f, fIdx) => (
+                  {(tier.features || []).map((f, fIdx) => (
                     <li key={fIdx} className="flex items-start gap-2.5">
                       <Check className="w-4 h-4 text-[#FF5500] shrink-0 mt-0.5" />
                       <span>{f}</span>

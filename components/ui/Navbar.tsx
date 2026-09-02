@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Wrench, Menu, X, User, Cpu, ShieldCheck } from "lucide-react";
-import { useTicketStore } from "@/lib/ticket-store";
+import { Wrench, Menu, X, Shield, PlusCircle, LogOut, User, Sparkles } from "lucide-react";
+import { useCurrentUser, signOutUser } from "@/lib/auth";
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { currentRole, switchRole } = useTicketStore();
+  const { user, nombre, avatarUrl, isAdmin } = useCurrentUser();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b-2 border-[#D6CEC0] bg-[#FAF8F3]/95 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full bg-[#FAF8F3]/95 backdrop-blur-md shadow-[0_1px_0_rgba(25,28,33,0.06)]">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-6xl">
         
         {/* Logo / Emblema de Taller */}
@@ -34,60 +34,76 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Nav Links */}
-        <nav className="hidden md:flex items-center gap-7 text-sm font-semibold text-[#4A4337]">
+        <nav className="hidden md:flex items-center gap-6 text-xs font-bold text-[#4A4337] uppercase font-mono">
           <Link href="/#servicios" className="hover:text-[#FF5500] transition-colors">
-            Trabajos de Taller
+            Trabajos
           </Link>
           <Link href="/#precios" className="hover:text-[#FF5500] transition-colors">
             Tarifario
           </Link>
           <Link href="/#como-funciona" className="hover:text-[#FF5500] transition-colors">
-            Protocolo de Recepción
+            Protocolo
+          </Link>
+          <Link href="/#opiniones" className="hover:text-[#FF5500] transition-colors flex items-center gap-1 text-[#FF5500]">
+            <Sparkles className="w-3 h-3" />
+            Opiniones
           </Link>
           <Link href="/#faq" className="hover:text-[#FF5500] transition-colors">
-            Preguntas de Taller
+            Preguntas
           </Link>
         </nav>
 
-        {/* Action Buttons & Role Switcher */}
+        {/* Action Buttons */}
         <div className="hidden sm:flex items-center gap-3">
           
-          {/* Selector de modo para pruebas */}
-          <div className="flex items-center bg-[#EAE3D5] border border-[#D0C7B6] rounded-lg p-0.5 text-xs font-mono">
-            <button
-              onClick={() => switchRole("cliente")}
-              className={`px-2.5 py-1 rounded transition-all ${
-                currentRole === "cliente"
-                  ? "bg-[#191C21] text-white font-bold"
-                  : "text-[#665D4F] hover:text-[#191C21]"
-              }`}
+          {/* Si es SUPER ADMIN activo */}
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-black rounded-lg bg-[#191C21] text-[#FF5500] border-2 border-[#FF5500] hover:bg-[#2C3038] transition-all font-mono tracking-wider shadow-sm animate-pulse"
             >
-              Cliente
-            </button>
-            <button
-              onClick={() => switchRole("admin")}
-              className={`px-2.5 py-1 rounded transition-all ${
-                currentRole === "admin"
-                  ? "bg-[#FF5500] text-white font-bold"
-                  : "text-[#665D4F] hover:text-[#191C21]"
-              }`}
+              <Shield className="w-3.5 h-3.5 fill-[#FF5500]" />
+              BANCO ADMIN
+            </Link>
+          )}
+
+          {/* Usuario logueado */}
+          {user ? (
+            <div className="flex items-center gap-2">
+              <Link
+                href="/panel"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-lg bg-[#EAE3D5] hover:bg-[#D0C7B6] text-[#191C21] border border-[#D0C7B6] font-mono transition-colors"
+              >
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt={nombre} className="w-5 h-5 rounded-full object-cover border border-[#FF5500]" />
+                ) : (
+                  <User className="w-3.5 h-3.5 text-[#FF5500]" />
+                )}
+                <span className="max-w-[110px] truncate">{nombre}</span>
+              </Link>
+              <button
+                onClick={signOutUser}
+                title="Cerrar sesión"
+                className="p-2 rounded-lg bg-[#EAE3D5] text-[#736B5E] hover:text-[#C62828] hover:bg-[#D0C7B6] transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="px-3.5 py-2 text-xs font-bold rounded-lg bg-[#FAF8F3] hover:bg-[#EAE3D5] text-[#191C21] border-2 border-[#D0C7B6] transition-colors font-mono"
             >
-              Técnico (Vos)
-            </button>
-          </div>
+              Ingresar
+            </Link>
+          )}
 
-          <Link
-            href={currentRole === "admin" ? "/admin" : "/panel"}
-            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-lg bg-[#FAF8F3] hover:bg-[#EAE3D5] text-[#191C21] border-2 border-[#D0C7B6] transition-colors font-mono"
-          >
-            <User className="w-3.5 h-3.5 text-[#FF5500]" />
-            {currentRole === "admin" ? "Banco Admin" : "Mis Órdenes"}
-          </Link>
-
+          {/* Botón Principal: Ingresar Placa */}
           <Link
             href="/panel/nuevo-ticket"
             className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-lg bg-[#FF5500] hover:bg-[#E64D00] text-white transition-all shadow-sm border border-[#D94800] uppercase tracking-wider font-mono"
           >
+            <PlusCircle className="w-3.5 h-3.5" />
             + Ingresar Placa
           </Link>
         </div>
@@ -104,8 +120,8 @@ export function Navbar() {
 
       {/* Mobile Drawer */}
       {mobileOpen && (
-        <div className="md:hidden border-b-2 border-[#D6CEC0] bg-[#FAF8F3] px-4 py-6 space-y-4">
-          <nav className="flex flex-col space-y-3 text-[#332D24] font-semibold text-sm">
+        <div className="md:hidden bg-[#FAF8F3] px-4 py-6 space-y-4 font-mono">
+          <nav className="flex flex-col space-y-3 text-[#332D24] font-bold text-xs uppercase">
             <Link
               href="/#servicios"
               onClick={() => setMobileOpen(false)}
@@ -128,6 +144,13 @@ export function Navbar() {
               Protocolo de Recepción
             </Link>
             <Link
+              href="/#opiniones"
+              onClick={() => setMobileOpen(false)}
+              className="py-1 hover:text-[#FF5500] text-[#FF5500]"
+            >
+              Opiniones de Clientes
+            </Link>
+            <Link
               href="/#faq"
               onClick={() => setMobileOpen(false)}
               className="py-1 hover:text-[#FF5500]"
@@ -136,38 +159,49 @@ export function Navbar() {
             </Link>
           </nav>
 
-          <div className="pt-4 border-t border-[#D6CEC0] flex flex-col gap-2 font-mono">
-            <div className="flex items-center justify-between py-2 text-xs text-[#665D4F]">
-              <span>Modo Activo:</span>
-              <div className="flex bg-[#EAE3D5] rounded p-0.5">
+          <div className="pt-4 border-t border-[#D6CEC0] flex flex-col gap-2.5 font-mono">
+            {isAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setMobileOpen(false)}
+                className="w-full py-2.5 text-center text-xs font-black rounded-lg bg-[#191C21] text-[#FF5500] border-2 border-[#FF5500] uppercase tracking-wider"
+              >
+                ⚡ Acceder al Banco Admin
+              </Link>
+            )}
+
+            {user ? (
+              <div className="flex items-center justify-between gap-2 bg-[#EAE3D5] p-2 rounded-lg border border-[#D0C7B6]">
+                <div className="flex items-center gap-2 text-xs font-bold text-[#191C21]">
+                  {avatarUrl && <img src={avatarUrl} alt={nombre} className="w-5 h-5 rounded-full" />}
+                  <span>{nombre}</span>
+                </div>
                 <button
-                  onClick={() => switchRole("cliente")}
-                  className={`px-3 py-1 rounded text-xs ${currentRole === "cliente" ? "bg-[#191C21] text-white font-bold" : "text-[#665D4F]"}`}
+                  onClick={() => {
+                    setMobileOpen(false);
+                    signOutUser();
+                  }}
+                  className="text-xs text-[#C62828] font-bold hover:underline"
                 >
-                  Cliente
-                </button>
-                <button
-                  onClick={() => switchRole("admin")}
-                  className={`px-3 py-1 rounded text-xs ${currentRole === "admin" ? "bg-[#FF5500] text-white font-bold" : "text-[#665D4F]"}`}
-                >
-                  Técnico
+                  Salir
                 </button>
               </div>
-            </div>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setMobileOpen(false)}
+                className="w-full py-2.5 text-center text-xs font-bold rounded-lg bg-[#EAE3D5] text-[#191C21] border border-[#D0C7B6]"
+              >
+                Ingresar / Iniciar Sesión
+              </Link>
+            )}
 
-            <Link
-              href={currentRole === "admin" ? "/admin" : "/panel"}
-              onClick={() => setMobileOpen(false)}
-              className="w-full py-2.5 text-center text-xs font-bold rounded-lg bg-[#EAE3D5] text-[#191C21] border border-[#D0C7B6]"
-            >
-              {currentRole === "admin" ? "Ir al Banco de Admin" : "Mis Órdenes de Servicio"}
-            </Link>
             <Link
               href="/panel/nuevo-ticket"
               onClick={() => setMobileOpen(false)}
-              className="w-full py-2.5 text-center text-xs font-bold rounded-lg bg-[#FF5500] text-white uppercase tracking-wider"
+              className="w-full py-3 text-center text-xs font-bold rounded-lg bg-[#FF5500] text-white uppercase tracking-wider shadow-md"
             >
-              Ingresar Placa a Taller
+              + Ingresar Placa a Taller
             </Link>
           </div>
         </div>

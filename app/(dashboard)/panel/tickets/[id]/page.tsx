@@ -3,15 +3,17 @@
 import { use } from "react";
 import Link from "next/link";
 import { useTicketStore } from "@/lib/ticket-store";
+import { useCurrentUser } from "@/lib/auth";
 import { TicketStatusStepper } from "@/components/tickets/TicketStatusStepper";
 import { TicketChat } from "@/components/tickets/TicketChat";
-import { RoleSwitcher } from "@/components/dashboard/RoleSwitcher";
-import { ArrowLeft, Cpu, MessageCircle, AlertCircle, Paperclip, Wrench } from "lucide-react";
+import { ArrowLeft, Cpu, MessageCircle, AlertCircle, Paperclip, Wrench, Shield } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { whatsappUrl } from "@/lib/site-config";
 
 export default function ClientTicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const { tickets, currentRole, isLoaded, addMessage } = useTicketStore();
+  const { tickets, isLoaded, addMessage } = useTicketStore();
+  const { user, nombre, isAdmin } = useCurrentUser();
 
   const ticket = tickets.find((t) => t.id === resolvedParams.id);
 
@@ -48,9 +50,9 @@ export default function ClientTicketDetailPage({ params }: { params: Promise<{ i
     addMessage(
       ticket.id,
       text,
-      currentRole === "admin" ? "usr-admin" : "usr-demo",
-      currentRole === "admin" ? "Exequiel (Taller)" : (ticket.user_nombre || "Cliente"),
-      currentRole
+      user?.id || (isAdmin ? "usr-admin" : "usr-demo"),
+      isAdmin ? "Exequiel (Taller)" : (ticket.user_nombre || nombre || "Cliente"),
+      isAdmin ? "admin" : "cliente"
     );
   };
 
@@ -60,19 +62,23 @@ export default function ClientTicketDetailPage({ params }: { params: Promise<{ i
       {/* Top Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <Link
-          href="/panel"
+          href={isAdmin ? "/admin" : "/panel"}
           className="inline-flex items-center gap-1.5 text-xs text-[#6B6355] hover:text-[#FF5500] transition-colors font-mono font-bold uppercase"
         >
-          <ArrowLeft className="w-4 h-4" /> Volver al listado de órdenes
+          <ArrowLeft className="w-4 h-4" /> {isAdmin ? "Volver al Banco Admin" : "Volver al listado de órdenes"}
         </Link>
-        <RoleSwitcher />
+        {isAdmin && (
+          <span className="text-[10px] font-mono font-bold bg-[#191C21] text-[#FF5500] px-2.5 py-1 rounded border border-[#FF5500] uppercase flex items-center gap-1">
+            <Shield className="w-3 h-3" /> Vista de Administrador
+          </span>
+        )}
       </div>
 
       {/* Header Info */}
       <div className="bg-[#FAF8F3] border-2 border-[#D6CEC0] rounded-xl p-6 mb-6 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1.5 font-mono">
+            <div className="flex items-center gap-2 mb-1.5 font-mono flex-wrap">
               <span className="text-xs font-bold text-[#FF5500] bg-[#F3EFE6] px-2.5 py-0.5 rounded border border-[#D6CEC0]">
                 ORDEN #{ticket.ticket_number}
               </span>
@@ -120,10 +126,13 @@ export default function ClientTicketDetailPage({ params }: { params: Promise<{ i
             {/* 1 Adjunto si existe */}
             {ticket.adjunto_url && (
               <div className="pt-4 border-t-2 border-[#EAE3D5]">
-                <span className="text-xs text-[#736B5E] block mb-2 font-mono font-bold uppercase">Archivo adjunto de la orden:</span>
-                <div className="flex items-center gap-2 p-2.5 bg-[#F3EFE6] rounded-lg border border-[#D0C7B6] text-xs font-mono text-[#191C21]">
-                  <Paperclip className="w-3.5 h-3.5 text-[#FF5500]" />
-                  <span>{ticket.adjunto_url.split('/').pop()}</span>
+                <span className="text-xs text-[#736B5E] block mb-2 font-mono font-bold uppercase">Foto o archivo adjunto:</span>
+                <div className="overflow-hidden rounded-xl border border-[#D0C7B6] bg-[#F3EFE6] p-2">
+                  <img
+                    src={ticket.adjunto_url}
+                    alt="Foto de la orden"
+                    className="max-h-60 w-full object-contain rounded-lg"
+                  />
                 </div>
               </div>
             )}
@@ -138,7 +147,7 @@ export default function ClientTicketDetailPage({ params }: { params: Promise<{ i
               </p>
             </div>
             <a
-              href={`https://wa.me/5493410000000?text=Hola%20Chispa32!%20Consulto%20por%20la%20Orden%20%23${ticket.ticket_number}`}
+              href={whatsappUrl(`Hola Chispa32 — consulto por la orden #${ticket.ticket_number}`)}
               target="_blank"
               rel="noreferrer"
               className="px-3.5 py-2 rounded-lg bg-[#191C21] text-[#FAF8F3] hover:bg-[#2C3038] font-mono font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 uppercase tracking-wider"
@@ -155,7 +164,7 @@ export default function ClientTicketDetailPage({ params }: { params: Promise<{ i
           <TicketChat
             ticketId={ticket.id}
             messages={ticket.messages || []}
-            currentRole={currentRole}
+            currentRole={isAdmin ? "admin" : "cliente"}
             onSendMessage={handleSendMessage}
           />
         </div>

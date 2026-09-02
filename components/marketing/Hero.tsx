@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Wrench, ArrowRight, ShieldCheck, Zap, Terminal, Activity, CheckSquare, Gauge } from "lucide-react";
+import { whatsappUrl } from "@/lib/site-config";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-[#F3EFE6] py-14 sm:py-20 text-[#191C21] bg-blueprint-grid border-b-2 border-[#D6CEC0]">
+    <section className="relative overflow-hidden py-14 sm:py-20 text-[#191C21]">
       
       {/* Marcadores de regla milimetrada en esquinas */}
       <div className="absolute top-3 left-4 font-mono text-[10px] text-[#A69E8F] tracking-widest hidden md:block">
@@ -17,7 +18,7 @@ export function Hero() {
         <div className="flex flex-col items-center text-center">
           
           {/* Badge Stamped estilo etiqueta técnica de taller */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded bg-[#EAE3D5] border-2 border-[#C8BFA $\to$ #C8BFA] border-[#C8BFA8] text-[#191C21] text-xs font-mono font-bold mb-6 uppercase tracking-wider shadow-sm">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded bg-[#EAE3D5] border-2 border-[#C8BFA8] text-[#191C21] text-xs font-mono font-bold mb-6 uppercase tracking-wider shadow-sm">
             <span className="w-2.5 h-2.5 bg-[#FF5500] rounded-sm" />
             Servicio Técnico Embebido • Reparación & Reflasheo en Rosario
           </div>
@@ -47,7 +48,7 @@ export function Hero() {
             </Link>
 
             <a
-              href="https://wa.me/5493410000000?text=Hola%20Chispa32!%20Tengo%20una%20placa%20ESP32%20con%20problemas%20para%20revisar%20en%20taller"
+              href={whatsappUrl("Hola Chispa32 — tengo una placa ESP32 con problemas para revisar en taller")}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#191C21] hover:bg-[#2C3038] text-[#FAF8F3] font-bold text-sm sm:text-base transition-all shadow-md hover:-translate-y-0.5 uppercase tracking-wider"
@@ -84,7 +85,7 @@ export function Hero() {
           </div>
 
           {/* Badges de Garantía de Taller */}
-          <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl border-t-2 border-[#D6CEC0] pt-6 text-[#524B3E] text-xs sm:text-sm font-mono font-bold">
+          <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl pt-6 text-[#524B3E] text-xs sm:text-sm font-mono font-bold">
             <div className="flex items-center justify-center gap-2">
               <CheckSquare className="w-4 h-4 text-[#FF5500]" /> Test en Banco Físico
             </div>

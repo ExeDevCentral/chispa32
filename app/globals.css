@@ -8,49 +8,60 @@
 }
 
 body {
-  background-color: #F3EFE6;
+  background-color: #FAF8F3;
   color: #191C21;
   font-family: var(--font-industrial), sans-serif;
   overflow-x: hidden;
+}
+
+/* Superficie de taller — cuadrícula blueprint + calidez sutil */
+.bg-workshop-surface {
+  background-color: #FAF8F3;
+  background-size: 56px 56px, 56px 56px, 100% 100%;
+  background-image:
+    linear-gradient(to right, rgba(25, 28, 33, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(25, 28, 33, 0.045) 1px, transparent 1px),
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(255, 85, 0, 0.03), transparent 55%);
+}
+
+/* Alias — misma cuadrícula alineada al canvas de energía (56px) */
+.bg-blueprint-grid {
+  background-color: #FAF8F3;
+  background-size: 56px 56px;
+  background-image:
+    linear-gradient(to right, rgba(25, 28, 33, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(25, 28, 33, 0.045) 1px, transparent 1px);
 }
 
 code, pre, .font-mono {
   font-family: var(--font-mono-tech), monospace;
 }
 
-/* Scrollbar industrial de taller */
+/* Scrollbar light industrial */
 ::-webkit-scrollbar {
   width: 9px;
   height: 9px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #E8E2D5;
+  background: #EAE3D5;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #C4BAA7;
+  background: #C4BBAF;
   border-radius: 2px;
-  border: 2px solid #E8E2D5;
+  border: 2px solid #EAE3D5;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #FF5500;
 }
 
-/* Cuadrícula de papel milimetrado técnico / Blueprint de banco de trabajo */
-.bg-blueprint-grid {
-  background-size: 24px 24px;
-  background-image: 
-    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
-}
-
-.bg-dark-grid {
+.bg-light-grid {
   background-size: 20px 20px;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    linear-gradient(to right, rgba(25, 28, 33, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(25, 28, 33, 0.05) 1px, transparent 1px);
 }
 
 /* Sello técnico de taller */
@@ -61,6 +72,31 @@ code, pre, .font-mono {
   text-transform: uppercase;
   font-weight: 700;
   letter-spacing: 0.05em;
+}
+
+/* Animación shimmer para skeleton loaders */
+@keyframes shimmer {
+  100% { transform: translateX(200%); }
+}
+
+/* Animación Marquee Horizontal de derecha a izquierda */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
 
 /* Cinta de precaución / striped safety tape */
