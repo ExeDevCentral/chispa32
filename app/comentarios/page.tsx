@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Star, MessageSquarePlus, CheckCircle2, Edit3, X, Cpu, Wrench, ArrowLeft, Sparkles } from "lucide-react";
+import { Star, MessageSquarePlus, CheckCircle2, Edit3, X, Cpu, ArrowLeft, Sparkles } from "lucide-react";
 import { Review } from "@/types";
 import { getReviews, saveReview, INITIAL_REVIEWS } from "@/lib/supabase-service";
 import { useCurrentUser, signInWithGoogle } from "@/lib/auth";
@@ -17,7 +17,6 @@ export default function ComentariosPage() {
   const [nombre, setNombre] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [existingReviewId, setExistingReviewId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
   const { user, email, nombre: currentUserName, avatarUrl, isLoading } = useCurrentUser();
@@ -32,25 +31,35 @@ export default function ComentariosPage() {
   };
 
   useEffect(() => {
-    loadReviews();
+    let cancelled = false;
+    async function load() {
+      try {
+        const data = await getReviews();
+        if (!cancelled) setReviews(data.filter((r) => r.aprobado));
+      } catch {
+        if (!cancelled) setReviews(INITIAL_REVIEWS.filter((r) => r.aprobado));
+      }
+    }
+    void load();
+    return () => { cancelled = true; };
   }, []);
 
-  useEffect(() => {
-    if (user && reviews.length > 0) {
-      const found = reviews.find((r) => r.user_id === user.id || (email && r.user_email === email));
-      if (found) {
-        setExistingReviewId(found.id);
-        setRating(found.rating);
-        setChipService(found.chip_o_servicio || "ESP32");
-        setComentario(found.comentario);
-        setNombre(found.user_nombre);
-      } else {
-        setNombre(currentUserName || "");
-      }
-    } else if (user) {
+  const existingReview = user && reviews.length > 0
+    ? reviews.find((r) => r.user_id === user.id || (email && r.user_email === email)) ?? null
+    : null;
+  const existingReviewId = existingReview?.id ?? null;
+
+  const handleStartEditing = () => {
+    if (existingReview) {
+      setRating(existingReview.rating);
+      setChipService(existingReview.chip_o_servicio || "ESP32");
+      setComentario(existingReview.comentario);
+      setNombre(existingReview.user_nombre || "");
+    } else {
       setNombre(currentUserName || "");
     }
-  }, [user, email, reviews, currentUserName]);
+    setIsEditing(true);
+  };
 
   const handleGoogleLogin = async () => {
     try {
@@ -80,11 +89,6 @@ export default function ComentariosPage() {
       });
 
       await loadReviews();
-
-      // Re-detect existing review
-      const allReviews = await getReviews();
-      const found = allReviews.find((r) => r.user_id === user.id || r.user_email === email);
-      if (found) setExistingReviewId(found.id);
 
       setSuccessMsg(existingReviewId ? "¡Reseña actualizada con éxito!" : "¡Gracias! Tu opinión ya está en el banner del taller.");
       setIsEditing(false);
@@ -188,7 +192,7 @@ export default function ComentariosPage() {
               )}
 
               <button
-                onClick={() => setIsEditing(true)}
+                onClick={handleStartEditing}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[#FF5500] hover:bg-[#E64D00] text-white font-mono font-bold rounded-xl uppercase tracking-wider text-sm transition-all shadow-md"
               >
                 <Edit3 className="w-4 h-4" />

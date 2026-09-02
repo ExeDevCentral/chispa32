@@ -17,7 +17,6 @@ export function ReviewsMarquee() {
   const [nombre, setNombre] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [existingReviewId, setExistingReviewId] = useState<string | null>(null);
 
   const { user, email, nombre: currentUserName, avatarUrl, isLoading: isAuthLoading } = useCurrentUser();
 
@@ -31,27 +30,33 @@ export function ReviewsMarquee() {
   };
 
   useEffect(() => {
-    loadReviews();
-  }, []);
-
-  // Check if current user has an existing review
-  useEffect(() => {
-    if (user && reviews.length > 0) {
-      const found = reviews.find((r) => r.user_id === user.id || (email && r.user_email === email));
-      if (found) {
-        setExistingReviewId(found.id);
-        setRating(found.rating);
-        setChipService(found.chip_o_servicio || "ESP32");
-        setComentario(found.comentario);
-        setNombre(found.user_nombre || currentUserName);
-      } else {
-        setExistingReviewId(null);
-        setNombre(currentUserName);
+    let cancelled = false;
+    async function load() {
+      try {
+        const data = await getReviews();
+        if (!cancelled) setReviews(data);
+      } catch (e) {
+        if (!cancelled) console.error("Error loading reviews:", e);
       }
     }
-  }, [user, email, reviews, currentUserName]);
+    void load();
+    return () => { cancelled = true; };
+  }, []);
+
+  const existingReview = user && reviews.length > 0
+    ? reviews.find((r) => r.user_id === user.id || (email && r.user_email === email)) ?? null
+    : null;
+  const existingReviewId = existingReview?.id ?? null;
 
   const handleOpenModal = () => {
+    if (existingReview) {
+      setRating(existingReview.rating);
+      setChipService(existingReview.chip_o_servicio || "ESP32");
+      setComentario(existingReview.comentario);
+      setNombre(existingReview.user_nombre || currentUserName);
+    } else {
+      setNombre(currentUserName);
+    }
     setIsModalOpen(true);
     setSuccessMsg(null);
   };

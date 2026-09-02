@@ -1,19 +1,19 @@
 "use client";
 
-import { useState, useRef, useEffect, Suspense } from "react";
+import { useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTicketStore } from "@/lib/ticket-store";
 import { useCurrentUser } from "@/lib/auth";
 import { uploadPhotoFile } from "@/lib/supabase-service";
 import { TicketPriority } from "@/types";
-import { Wrench, UploadCloud, ArrowLeft, MapPin, Phone, Image as ImageIcon, X, CheckCircle2 } from "lucide-react";
+import { Wrench, UploadCloud, ArrowLeft, MapPin, Phone, Image as ImageIcon, X } from "lucide-react";
 import Link from "next/link";
 
 function TicketForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { createTicket } = useTicketStore();
-  const { user, email: userEmail, nombre: userName } = useCurrentUser();
+  const { user, email: userEmail, nombre: userName, isLoading: isAuthLoading } = useCurrentUser();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const initialPackage = searchParams.get("paquete") || "";
@@ -25,25 +25,14 @@ function TicketForm() {
   const [attachedUrl, setAttachedUrl] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    nombre: "",
-    email: "",
+    nombre: isAuthLoading ? "" : userName || "",
+    email: isAuthLoading ? "" : userEmail || "",
     whatsapp: "",
     tipo_chip: "ESP32-WROOM-32",
     titulo: initialPackage ? `Solicitud: ${initialPackage}` : "",
     descripcion: "",
     prioridad: "media" as TicketPriority,
   });
-
-  // Autofill with logged in user if available
-  useEffect(() => {
-    if (user || userEmail) {
-      setFormData((prev) => ({
-        ...prev,
-        nombre: prev.nombre || userName || "",
-        email: prev.email || userEmail || "",
-      }));
-    }
-  }, [user, userEmail, userName]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

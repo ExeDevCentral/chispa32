@@ -207,7 +207,7 @@ export async function getTickets(): Promise<Ticket[]> {
       .order("created_at", { ascending: false });
 
     if (!error && data && data.length > 0) {
-      const mapped: Ticket[] = data.map((t: any) => ({
+      const mapped: Ticket[] = data.map((t) => ({
         id: t.id,
         ticket_number: t.ticket_number,
         user_id: t.user_id,
@@ -222,7 +222,7 @@ export async function getTickets(): Promise<Ticket[]> {
         presupuesto: t.presupuesto ? Number(t.presupuesto) : undefined,
         nota_interna: t.nota_interna,
         adjunto_url: t.adjunto_url,
-        messages: (t.ticket_messages || []).map((m: any) => ({
+        messages: ((t.ticket_messages as unknown as TicketMessage[]) || []).map((m) => ({
           id: m.id,
           ticket_id: m.ticket_id,
           sender_id: m.sender_id,

@@ -21,8 +21,8 @@ function LoginForm() {
     try {
       // All users go to /comentarios after Google login
       await signInWithGoogle("/comentarios");
-    } catch (err: any) {
-      setErrorMessage(err?.message || "Error al conectar con Google");
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Error al conectar con Google");
       setGoogleLoading(false);
     }
   };

@@ -646,9 +646,9 @@ export default function AdminDashboardPage() {
             ].map(({ label, key, type }) => (
               <div key={key}>
                 <label className="block text-xs font-bold text-[#736B5E] uppercase font-mono mb-1.5">{label}</label>
-                <input type={type} required value={(editingPrice as any)[key]}
-                  onChange={e => setEditingPrice({ ...editingPrice, [key]: type === "number" ? Number(e.target.value) : e.target.value } as WorkshopPrice)}
-                  className="w-full bg-[#F3EFE6] border border-[#D6CEC0] text-[#191C21] rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-[#FF5500]" />
+                <input type={type} required value={String(editingPrice[key as keyof WorkshopPrice])}
+                   onChange={e => setEditingPrice({ ...editingPrice, [key]: type === "number" ? Number(e.target.value) : e.target.value } as WorkshopPrice)}
+                   className="w-full bg-[#F3EFE6] border border-[#D6CEC0] text-[#191C21] rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-[#FF5500]" />
               </div>
             ))}
             <div>
@@ -684,8 +684,8 @@ export default function AdminDashboardPage() {
             {[{ label: "Título", key: "titulo" }, { label: "Categoría", key: "categoria" }].map(({ label, key }) => (
               <div key={key}>
                 <label className="block text-xs font-bold text-[#736B5E] uppercase font-mono mb-1.5">{label}</label>
-                <input required value={(editingResponse as any)[key]} onChange={e => setEditingResponse({ ...editingResponse, [key]: e.target.value } as QuickResponse)}
-                  className="w-full bg-[#F3EFE6] border border-[#D6CEC0] text-[#191C21] rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-[#FF5500]" />
+                <input required value={String(editingResponse[key as keyof QuickResponse])} onChange={e => setEditingResponse({ ...editingResponse, [key]: e.target.value } as QuickResponse)}
+                   className="w-full bg-[#F3EFE6] border border-[#D6CEC0] text-[#191C21] rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-[#FF5500]" />
               </div>
             ))}
             <div>
@@ -711,8 +711,8 @@ export default function AdminDashboardPage() {
             {[{ label: "Título", key: "titulo" }, { label: "URL", key: "url", type: "url" }, { label: "Categoría", key: "categoria" }].map(({ label, key, type }) => (
               <div key={key}>
                 <label className="block text-xs font-bold text-[#736B5E] uppercase font-mono mb-1.5">{label}</label>
-                <input required type={type || "text"} value={(editingLink as any)[key]} onChange={e => setEditingLink({ ...editingLink, [key]: e.target.value } as QuickLink)}
-                  className="w-full bg-[#F3EFE6] border border-[#D6CEC0] text-[#191C21] rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-[#FF5500]" />
+                <input required type={type || "text"} value={String(editingLink[key as keyof QuickLink])} onChange={e => setEditingLink({ ...editingLink, [key]: e.target.value } as QuickLink)}
+                   className="w-full bg-[#F3EFE6] border border-[#D6CEC0] text-[#191C21] rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-[#FF5500]" />
               </div>
             ))}
             <div>

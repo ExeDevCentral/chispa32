@@ -13,7 +13,13 @@ import {
 
 export function useTicketStore() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [currentRole, setCurrentRole] = useState<UserRole>("cliente");
+  const [currentRole, setCurrentRole] = useState<UserRole>(() => {
+    try {
+      return (localStorage.getItem("chispa32_user_role") as UserRole) || "cliente";
+    } catch {
+      return "cliente";
+    }
+  });
   const [isLoaded, setIsLoaded] = useState(false);
 
   const refreshTickets = useCallback(async () => {
@@ -28,15 +34,24 @@ export function useTicketStore() {
   }, []);
 
   useEffect(() => {
-    refreshTickets();
-
-    try {
-      const savedRole = localStorage.getItem("chispa32_user_role") as UserRole;
-      if (savedRole) {
-        setCurrentRole(savedRole);
+    let cancelled = false;
+    async function loadData() {
+      try {
+        const data = await getTickets();
+        if (!cancelled) {
+          setTickets(data);
+          setIsLoaded(true);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          console.error("Error refreshing tickets:", e);
+          setIsLoaded(true);
+        }
       }
-    } catch {}
-  }, [refreshTickets]);
+    }
+    void loadData();
+    return () => { cancelled = true; };
+  }, []);
 
   const switchRole = (role: UserRole) => {
     setCurrentRole(role);
