@@ -9,6 +9,8 @@ import {
   updateTicketNoteInDB,
   updateTicketBudgetInDB,
   addTicketMessageInDB,
+  addStatusHistoryInDB,
+  updateTicketAnalyticsInDB,
 } from "./supabase-service";
 
 export function useTicketStore() {
@@ -87,7 +89,39 @@ export function useTicketStore() {
   };
 
   const updateTicketStatus = async (ticketId: string, newStatus: TicketStatus) => {
+    const prev = tickets.find((t) => t.id === ticketId);
+    const prevEstado = prev?.estado ?? null;
+
     await updateTicketStatusInDB(ticketId, newStatus);
+
+    // Registra el cambio en el historial para medir tiempos por fase
+    try {
+      await addStatusHistoryInDB(ticketId, prevEstado, newStatus, "admin");
+    } catch {}
+
+    // Cierra la fecha de entrega o cancelación cuando corresponde
+    if (newStatus === "entregado" || newStatus === "cancelado") {
+      const now = new Date().toISOString();
+      try {
+        await updateTicketAnalyticsInDB(ticketId, {
+          ...(newStatus === "entregado" ? { fecha_entrega: now } : { fecha_cancelacion: now }),
+        });
+      } catch {}
+      setTickets((prevList) =>
+        prevList.map((t) =>
+          t.id === ticketId
+            ? {
+                ...t,
+                estado: newStatus,
+                updated_at: now,
+                ...(newStatus === "entregado" ? { fecha_entrega: now } : { fecha_cancelacion: now }),
+              }
+            : t
+        )
+      );
+      return;
+    }
+
     setTickets((prev) =>
       prev.map((t) => (t.id === ticketId ? { ...t, estado: newStatus, updated_at: new Date().toISOString() } : t))
     );

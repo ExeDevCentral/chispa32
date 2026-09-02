@@ -15,11 +15,13 @@ import {
   getWorkshopPrices, saveWorkshopPrice,
   getQuickResponses, saveQuickResponse, deleteQuickResponseInDB,
   getQuickLinks, saveQuickLink, deleteQuickLinkInDB,
+  addTicketPaymentInDB,
 } from "@/lib/supabase-service";
 import { TicketStatus, Review, WorkshopPrice, QuickResponse, QuickLink } from "@/types";
 import { formatDate, formatCurrencyARS } from "@/lib/utils";
 import { ToastContainer } from "@/components/ui/Toast";
 import { useToast } from "@/hooks/useToast";
+import { AnalyticsPanel } from "@/components/admin/AnalyticsPanel";
 
 const PRIORITY_BORDER: Record<string, string> = {
   urgente: "border-l-red-600",
@@ -40,6 +42,7 @@ const STATUS_COLOR: Record<TicketStatus, string> = {
 
 const TABS = [
   { id: "tickets",     label: "Órdenes & Placas",       icon: ClipboardList },
+  { id: "analisis",    label: "Análisis Taller",        icon: BarChart3 },
   { id: "precios",     label: "Tarifario & Precios",     icon: Tag },
   { id: "respuestas",  label: "Respuestas WhatsApp",     icon: MessageSquare },
   { id: "links",       label: "Links de Taller",         icon: ExternalLink },
@@ -136,6 +139,22 @@ export default function AdminDashboardPage() {
           setEmailStatus("No se pudo enviar el reporte por email.");
         }
         setTimeout(() => setEmailStatus(null), 6000);
+      }
+
+      // Al entregar, registra el cobro para facturación / análisis de márgenes
+      if (ticket) {
+        const monto = ticket.presupuesto ?? 0;
+        if (monto > 0) {
+          try {
+            await addTicketPaymentInDB({
+              ticket_id: ticket.id,
+              monto,
+              metodo: "efectivo",
+              estado: "cobrado",
+              nota: "Cobro registrado al marcar como entregado",
+            });
+          } catch {}
+        }
       }
     }
   };
@@ -342,6 +361,7 @@ export default function AdminDashboardPage() {
             {TABS.map(({ id, label, icon: Icon }) => {
               const counts: Record<Tab, number | null> = {
                 tickets: filteredTickets.length,
+                analisis: null,
                 precios: pricesList.length,
                 respuestas: responsesList.length,
                 links: linksList.length,
@@ -384,6 +404,11 @@ export default function AdminDashboardPage() {
       {/* CONTENT AREA */}
       {/* ══════════════════════════════════════════════════════ */}
       <div className="container mx-auto px-6 sm:px-8 py-10 sm:py-14 max-w-7xl space-y-8">
+
+        {/* ── TAB: ANÁLISIS DEL TALLER ── */}
+        {activeTab === "analisis" && (
+          <AnalyticsPanel tickets={tickets} />
+        )}
 
         {/* ── TAB 1: TICKETS ── */}
         {activeTab === "tickets" && (

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
-import { Ticket, TicketStatus, TicketMessage, Review, WorkshopPrice, QuickResponse, QuickLink } from "@/types";
+import { Ticket, TicketStatus, TicketMessage, TicketPayment, TicketPart, Review, WorkshopPrice, QuickResponse, QuickLink } from "@/types";
 import { INITIAL_TICKETS } from "./mock-data";
 
 // Fallback seed data for reviews
@@ -222,6 +222,14 @@ export async function getTickets(): Promise<Ticket[]> {
         presupuesto: t.presupuesto ? Number(t.presupuesto) : undefined,
         nota_interna: t.nota_interna,
         adjunto_url: t.adjunto_url,
+        tipo_trabajo: t.tipo_trabajo ?? undefined,
+        marca_dispositivo: t.marca_dispositivo ?? undefined,
+        origen: t.origen ?? undefined,
+        modo_servicio: t.modo_servicio ?? undefined,
+        costo_repuestos: t.costo_repuestos ? Number(t.costo_repuestos) : 0,
+        fecha_ingreso: t.fecha_ingreso ?? t.created_at,
+        fecha_entrega: t.fecha_entrega ?? undefined,
+        fecha_cancelacion: t.fecha_cancelacion ?? undefined,
         messages: ((t.ticket_messages as unknown as TicketMessage[]) || []).map((m) => ({
           id: m.id,
           ticket_id: m.ticket_id,
@@ -276,6 +284,14 @@ export async function createTicketInDB(ticketData: Omit<Ticket, "id" | "ticket_n
         presupuesto: ticketData.presupuesto || 0,
         nota_interna: ticketData.nota_interna || "",
         adjunto_url: ticketData.adjunto_url || "",
+        tipo_trabajo: ticketData.tipo_trabajo || null,
+        marca_dispositivo: ticketData.marca_dispositivo || null,
+        origen: ticketData.origen || "web",
+        modo_servicio: ticketData.modo_servicio || "presencial",
+        costo_repuestos: ticketData.costo_repuestos || 0,
+        fecha_ingreso: ticketData.fecha_ingreso || new Date().toISOString(),
+        fecha_entrega: ticketData.fecha_entrega || null,
+        fecha_cancelacion: ticketData.fecha_cancelacion || null,
       })
       .select()
       .single();
@@ -697,4 +713,119 @@ export async function deleteQuickLinkInDB(id: string) {
   }
   const list = getLocal<QuickLink[]>("chispa32_quick_links_cache", INITIAL_QUICK_LINKS);
   setLocal("chispa32_quick_links_cache", list.filter((l) => l.id !== id));
+}
+
+// -------------------------------------------------------------
+// ANALÍTICA DE PEDIDOS
+// -------------------------------------------------------------
+
+/**
+ * Registra un cambio de estado en el historial del ticket.
+ * Esto permite medir en el futuro cuánto tardó cada fase
+ * (ingreso → diagnóstico → reparación → entrega).
+ */
+export async function addStatusHistoryInDB(
+  ticketId: string,
+  estadoAnterior: TicketStatus | null,
+  estadoNuevo: TicketStatus,
+  usuario = "sistema"
+) {
+  const supabase = createClient();
+  try {
+    await supabase.from("ticket_status_history").insert({
+      ticket_id: ticketId,
+      estado_anterior: estadoAnterior,
+      estado_nuevo: estadoNuevo,
+      usuario,
+    });
+  } catch (e) {
+    console.warn("Supabase status history insert error:", e);
+  }
+}
+
+/**
+ * Registra un pago/cobro sobre un pedido (facturación y márgenes).
+ */
+export async function addTicketPaymentInDB(payment: {
+  ticket_id: string;
+  monto: number;
+  metodo: string;
+  estado: string;
+  nota?: string;
+}): Promise<TicketPayment | null> {
+  const supabase = createClient();
+  const now = new Date().toISOString();
+  try {
+    const { data, error } = await supabase
+      .from("ticket_payments")
+      .insert({
+        ticket_id: payment.ticket_id,
+        monto: payment.monto,
+        metodo: payment.metodo,
+        estado: payment.estado,
+        nota: payment.nota || null,
+        fecha_pago: payment.estado === "cobrado" ? now : null,
+      })
+      .select()
+      .single();
+    if (!error && data) return data as TicketPayment;
+  } catch (e) {
+    console.warn("Supabase payment insert error:", e);
+  }
+  return null;
+}
+
+/**
+ * Añade un repuesto/insumo usado en el pedido (para calcular margen real).
+ */
+export async function addTicketPartInDB(part: {
+  ticket_id: string;
+  nombre: string;
+  cantidad?: number;
+  costo_unitario?: number;
+}): Promise<TicketPart | null> {
+  const supabase = createClient();
+  try {
+    const { data, error } = await supabase
+      .from("ticket_parts")
+      .insert({
+        ticket_id: part.ticket_id,
+        nombre: part.nombre,
+        cantidad: part.cantidad || 1,
+        costo_unitario: part.costo_unitario || 0,
+      })
+      .select()
+      .single();
+    if (!error && data) return data as TicketPart;
+  } catch (e) {
+    console.warn("Supabase part insert error:", e);
+  }
+  return null;
+}
+
+/**
+ * Guarda los datos de segmentación/análisis del ticket
+ * (tipo de trabajo, origen, modo, marca, costos, fechas de cierre).
+ */
+export async function updateTicketAnalyticsInDB(
+  ticketId: string,
+  data: Partial<Pick<Ticket, "tipo_trabajo" | "marca_dispositivo" | "origen" | "modo_servicio" | "costo_repuestos" | "fecha_entrega" | "fecha_cancelacion">>
+) {
+  const supabase = createClient();
+  try {
+    await supabase
+      .from("tickets")
+      .update({ ...data, updated_at: new Date().toISOString() })
+      .eq("id", ticketId);
+  } catch (e) {
+    console.warn("Supabase analytics update error:", e);
+  }
+
+  // actualizar cache local
+  const list = getLocal<Ticket[]>("chispa32_tickets_cache", INITIAL_TICKETS);
+  const updated = list.map((t) =>
+    t.id === ticketId ? { ...t, ...data, updated_at: new Date().toISOString() } : t
+  );
+  setLocal("chispa32_tickets_cache", updated);
+  setLocal("chispa32_tickets_etapa1", updated);
 }

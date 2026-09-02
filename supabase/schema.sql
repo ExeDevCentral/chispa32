@@ -60,9 +60,26 @@ CREATE TABLE IF NOT EXISTS public.tickets (
   presupuesto NUMERIC DEFAULT 0,
   nota_interna TEXT,
   adjunto_url TEXT,
+
+  -- ── ANALÍTICA & SEGMENTACIÓN DE PEDIDOS ──
+  tipo_trabajo TEXT,                       -- flasheo | desbrickeado | debug | reparacion_hw | wled | domotica | otro
+  marca_dispositivo TEXT,                  -- ej: Espressif, Sonoff, Shelly, Tuya, Genérico
+  origen TEXT DEFAULT 'web',               -- web | whatsapp | presencial | recomendacion
+  modo_servicio TEXT DEFAULT 'presencial', -- presencial | envio | online
+  costo_repuestos NUMERIC DEFAULT 0,       -- costo de insumos (para calcular margen)
+  fecha_ingreso TIMESTAMPTZ DEFAULT timezone('utc'::text, now()),
+  fecha_entrega TIMESTAMPTZ,
+  fecha_cancelacion TIMESTAMPTZ,
+
   created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Índice de apoyo analítico sobre tickets
+CREATE INDEX IF NOT EXISTS tickets_estado_idx ON public.tickets (estado);
+CREATE INDEX IF NOT EXISTS tickets_tipo_chip_idx ON public.tickets (tipo_chip);
+CREATE INDEX IF NOT EXISTS tickets_tipo_trabajo_idx ON public.tickets (tipo_trabajo);
+CREATE INDEX IF NOT EXISTS tickets_created_at_idx ON public.tickets (created_at);
 
 -- 4. TABLA DE MENSAJES / BITÁCORA DEL TICKET
 CREATE TABLE IF NOT EXISTS public.ticket_messages (
@@ -85,7 +102,47 @@ CREATE TABLE IF NOT EXISTS public.ticket_attachments (
   created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 6. TABLA DE RESEÑAS / COMENTARIOS DE CLIENTES (Para el Marquee y Landing)
+-- 6. HISTORIAL DE CAMBIOS DE ESTADO (para medir tiempos por fase)
+CREATE TABLE IF NOT EXISTS public.ticket_status_history (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  ticket_id UUID REFERENCES public.tickets(id) ON DELETE CASCADE NOT NULL,
+  estado_anterior ticket_status,
+  estado_nuevo ticket_status NOT NULL,
+  usuario TEXT,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS ticket_status_history_ticket_idx ON public.ticket_status_history (ticket_id);
+CREATE INDEX IF NOT EXISTS ticket_status_history_estado_idx ON public.ticket_status_history (estado_nuevo);
+
+-- 7. PAGOS / COBROS POR PEDIDO (facturación)
+CREATE TABLE IF NOT EXISTS public.ticket_payments (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  ticket_id UUID REFERENCES public.tickets(id) ON DELETE CASCADE NOT NULL,
+  monto NUMERIC NOT NULL DEFAULT 0,
+  metodo TEXT DEFAULT 'efectivo',         -- efectivo | transferencia | mercadopago
+  estado TEXT DEFAULT 'pendiente',        -- pendiente | cobrado | reembolsado
+  fecha_pago TIMESTAMPTZ,
+  nota TEXT,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS ticket_payments_ticket_idx ON public.ticket_payments (ticket_id);
+CREATE INDEX IF NOT EXISTS ticket_payments_estado_idx ON public.ticket_payments (estado);
+
+-- 8. REPUESTOS / INSUMOS USADOS POR PEDIDO
+CREATE TABLE IF NOT EXISTS public.ticket_parts (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  ticket_id UUID REFERENCES public.tickets(id) ON DELETE CASCADE NOT NULL,
+  nombre TEXT NOT NULL,
+  cantidad NUMERIC DEFAULT 1,
+  costo_unitario NUMERIC DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS ticket_parts_ticket_idx ON public.ticket_parts (ticket_id);
+
+-- 9. TABLA DE RESEÑAS / COMENTARIOS DE CLIENTES (Para el Marquee y Landing)
 CREATE TABLE IF NOT EXISTS public.reviews (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
@@ -191,6 +248,9 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tickets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ticket_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ticket_attachments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ticket_status_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ticket_payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ticket_parts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.workshop_prices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.quick_responses ENABLE ROW LEVEL SECURITY;
@@ -223,6 +283,27 @@ CREATE POLICY "Lectura de mensajes" ON public.ticket_messages FOR SELECT USING (
 
 DROP POLICY IF EXISTS "Inserción de mensajes" ON public.ticket_messages;
 CREATE POLICY "Inserción de mensajes" ON public.ticket_messages FOR INSERT WITH CHECK (true);
+
+-- POLÍTICAS: STATUS HISTORY
+DROP POLICY IF EXISTS "Lectura historial" ON public.ticket_status_history;
+CREATE POLICY "Lectura historial" ON public.ticket_status_history FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Escritura historial admin" ON public.ticket_status_history;
+CREATE POLICY "Escritura historial admin" ON public.ticket_status_history FOR ALL USING (public.is_super_admin());
+
+-- POLÍTICAS: PAGOS
+DROP POLICY IF EXISTS "Lectura pagos" ON public.ticket_payments;
+CREATE POLICY "Lectura pagos" ON public.ticket_payments FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Escritura pagos admin" ON public.ticket_payments;
+CREATE POLICY "Escritura pagos admin" ON public.ticket_payments FOR ALL USING (public.is_super_admin());
+
+-- POLÍTICAS: REPUESTOS
+DROP POLICY IF EXISTS "Lectura repuestos" ON public.ticket_parts;
+CREATE POLICY "Lectura repuestos" ON public.ticket_parts FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Escritura repuestos admin" ON public.ticket_parts;
+CREATE POLICY "Escritura repuestos admin" ON public.ticket_parts FOR ALL USING (public.is_super_admin());
 
 -- POLÍTICAS: REVIEWS
 DROP POLICY IF EXISTS "Lectura pública de reviews aprobadas" ON public.reviews;

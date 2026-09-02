@@ -29,6 +29,10 @@ function TicketForm() {
     email: isAuthLoading ? "" : userEmail || "",
     whatsapp: "",
     tipo_chip: "ESP32-WROOM-32",
+    tipo_trabajo: "flasheo",
+    marca_dispositivo: "Espressif",
+    origen: "web",
+    modo_servicio: "presencial",
     titulo: initialPackage ? `Solicitud: ${initialPackage}` : "",
     descripcion: "",
     prioridad: "media" as TicketPriority,
@@ -73,6 +77,11 @@ function TicketForm() {
         user_email: formData.email.trim(),
         user_whatsapp: formData.whatsapp.trim(),
         tipo_chip: formData.tipo_chip,
+        tipo_trabajo: formData.tipo_trabajo,
+        marca_dispositivo: formData.marca_dispositivo,
+        origen: formData.origen,
+        modo_servicio: formData.modo_servicio,
+        costo_repuestos: 0,
         titulo: formData.titulo.trim(),
         descripcion: formData.descripcion.trim(),
         prioridad: formData.prioridad,
@@ -200,6 +209,69 @@ function TicketForm() {
               onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
               className="w-full bg-[#F3EFE6] border-2 border-[#D0C7B6] rounded-lg px-4 py-3 text-xs sm:text-sm text-[#191C21] focus:outline-none focus:border-[#FF5500]"
             />
+          </div>
+        </div>
+
+        {/* Segmentación del pedido (para análisis futuro) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-y-2 border-[#EAE3D5] py-6">
+          <div>
+            <label className="block text-xs font-bold text-[#191C21] mb-1.5 font-mono uppercase">
+              Tipo de trabajo
+            </label>
+            <select
+              value={formData.tipo_trabajo}
+              onChange={(e) => setFormData({ ...formData, tipo_trabajo: e.target.value })}
+              className="w-full bg-[#F3EFE6] border-2 border-[#D0C7B6] rounded-lg px-4 py-3 text-xs sm:text-sm text-[#191C21] focus:outline-none focus:border-[#FF5500] font-mono font-bold"
+            >
+              <option value="flasheo">Flasheo / Firmware</option>
+              <option value="desbrickeado">Desbrickeado / Bootloader</option>
+              <option value="debug">Debug / Código / FreeRTOS</option>
+              <option value="reparacion_hw">Reparación de hardware</option>
+              <option value="wled">Controladora WLED</option>
+              <option value="domotica">Domótica / MQTT</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-[#191C21] mb-1.5 font-mono uppercase">
+              Marca / Dispositivo
+            </label>
+            <input
+              type="text"
+              placeholder="Espressif, Sonoff, Shelly..."
+              value={formData.marca_dispositivo}
+              onChange={(e) => setFormData({ ...formData, marca_dispositivo: e.target.value })}
+              className="w-full bg-[#F3EFE6] border-2 border-[#D0C7B6] rounded-lg px-4 py-3 text-xs sm:text-sm text-[#191C21] focus:outline-none focus:border-[#FF5500]"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-[#191C21] mb-1.5 font-mono uppercase">
+              Cómo llegaste
+            </label>
+            <select
+              value={formData.origen}
+              onChange={(e) => setFormData({ ...formData, origen: e.target.value })}
+              className="w-full bg-[#F3EFE6] border-2 border-[#D0C7B6] rounded-lg px-4 py-3 text-xs sm:text-sm text-[#191C21] focus:outline-none focus:border-[#FF5500] font-mono font-bold"
+            >
+              <option value="web">Web / Google</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="presencial">En el taller</option>
+              <option value="recomendacion">Recomendación</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-[#191C21] mb-1.5 font-mono uppercase">
+              Modo de servicio
+            </label>
+            <select
+              value={formData.modo_servicio}
+              onChange={(e) => setFormData({ ...formData, modo_servicio: e.target.value })}
+              className="w-full bg-[#F3EFE6] border-2 border-[#D0C7B6] rounded-lg px-4 py-3 text-xs sm:text-sm text-[#191C21] focus:outline-none focus:border-[#FF5500] font-mono font-bold"
+            >
+              <option value="presencial">Presencial en Rosario</option>
+              <option value="envio">Envío por correo</option>
+              <option value="online">100% online (código)</option>
+            </select>
           </div>
         </div>
 

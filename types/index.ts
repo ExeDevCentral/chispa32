@@ -11,6 +11,18 @@ export type TicketStatus =
 
 export type TicketPriority = 'baja' | 'media' | 'alta' | 'urgente';
 
+export type TicketWorkType =
+  | 'flasheo'
+  | 'desbrickeado'
+  | 'debug'
+  | 'reparacion_hw'
+  | 'wled'
+  | 'domotica'
+  | 'otro';
+
+export type TicketOrigin = 'web' | 'whatsapp' | 'presencial' | 'recomendacion';
+export type TicketModo = 'presencial' | 'envio' | 'online';
+
 export interface Profile {
   id: string;
   email?: string;
@@ -57,9 +69,50 @@ export interface Ticket {
   presupuesto?: number;
   nota_interna?: string;
   adjunto_url?: string;
+  // ── Analítica & segmentación ──
+  tipo_trabajo?: string;
+  marca_dispositivo?: string;
+  origen?: string;
+  modo_servicio?: string;
+  costo_repuestos?: number;
+  fecha_ingreso?: string;
+  fecha_entrega?: string;
+  fecha_cancelacion?: string;
+  status_history?: TicketStatusHistory[];
+  payments?: TicketPayment[];
+  parts?: TicketPart[];
   messages?: TicketMessage[];
   created_at: string;
   updated_at: string;
+}
+
+export interface TicketStatusHistory {
+  id: string;
+  ticket_id: string;
+  estado_anterior?: TicketStatus | null;
+  estado_nuevo: TicketStatus;
+  usuario?: string;
+  created_at: string;
+}
+
+export interface TicketPayment {
+  id: string;
+  ticket_id: string;
+  monto: number;
+  metodo?: string;
+  estado?: string;
+  fecha_pago?: string;
+  nota?: string;
+  created_at: string;
+}
+
+export interface TicketPart {
+  id: string;
+  ticket_id: string;
+  nombre: string;
+  cantidad?: number;
+  costo_unitario?: number;
+  created_at: string;
 }
 
 export interface Review {
