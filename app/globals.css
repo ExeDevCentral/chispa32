@@ -109,3 +109,37 @@ code, pre, .font-mono {
     #191C21 20px
   );
 }
+
+/* Mobile Industrial Workshop Enhancements */
+@media (max-width: 768px) {
+  body {
+    font-size: 15px;
+  }
+  .bg-workshop-surface, .bg-blueprint-grid {
+    background-size: 32px 32px;
+  }
+  .stamp-tag {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+  }
+  button, .btn, a.btn {
+    min-height: 48px;
+    font-size: 0.95rem;
+  }
+  .workshop-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+  .hazard-stripes {
+    background-size: 20px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: clamp(1.8rem, 7vw, 2.4rem) !important;
+  }
+  .tech-metric-card {
+    padding: 14px 12px !important;
+  }
+}
