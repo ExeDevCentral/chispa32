@@ -140,6 +140,9 @@ Execute the SQL migration payload within `supabase/schema.sql` inside the Supaba
 npm run dev
 ```
 
+### Mobile Workshop Ergonomics (`< 768px`)
+- **Minimalist Mobile Bottom Dock**: Replaces floating corner FABs on mobile viewports with a well-spaced 4-action thumb-zone dock (`Trabajos`, `Tarifario`, `+ Placa`, `WhatsApp`) and `pb-24` clearance for zero UI overlap.
+
 ---
 
 ## 6. License
@@ -150,4 +153,4 @@ Distributed under the **MIT License**. Engineered for embedded systems maintenan
   <sub>Maintained with engineering rigor by <a href="https://github.com/ExeDevCentral">ExeDevCentral</a>.</sub>
 </div>
 
-<!-- ExeDevCentral Audit & Quality Stamp: 2026-11-14 (Phase 10/10) -->
+<!-- ExeDevCentral Audit & Quality Stamp: 2026-11-19 (Mobile UX & Zero-Overlap Verification) -->
