@@ -30,5 +30,12 @@
     "eslint-config-next": "16.3.3",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ExeDevCentral/chispa32.git"
+  },
+  "homepage": "https://chispa32.vercel.app",
+  "description": "Servicio técnico especializado en microcontroladores ESP32",
+  "license": "MIT"
 }
